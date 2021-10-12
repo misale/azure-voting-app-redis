@@ -19,36 +19,50 @@ pipeline {
             """)
          }
       }
-      // stage('Start test app') {
-      //    steps {
-      //       pwsh(script: """
-      //          docker-compose up -d
-      //          ./scripts/test_container.ps1
-      //       """)
-      //    }
-      //    post {
-      //       success {
-      //          echo "App started successfully :)"
-      //       }
-      //       failure {
-      //          echo "App failed to start :("
-      //       }
-      //    }
-      // }
-      // stage('Run Tests') {
-      //    steps {
-      //       pwsh(script: """
-      //          pytest ./tests/test_sample.py
-      //       """)
-      //    }
-      // }
-      // stage('Stop test app') {
-      //    steps {
-      //       pwsh(script: """
-      //          docker-compose down
-      //       """)
-      //    }
-      // }
+      stage('Start test app') {
+         steps {
+            sh(script: """
+               docker-compose up -d
+               chmod +x ./scripts/test_container.sh
+               ./scripts/test_container.sh
+            """)
+         }
+         post {
+            success {
+               echo "App started successfully :)"
+            }
+            failure {
+               echo "App failed to start :("
+            }
+         }
+      }
+      stage('Run Tests') {
+         steps {
+            sh(script: """
+               pytest ./tests/test_sample.py
+            """)
+         }
+      }
+      stage('Stop test app') {
+         steps {
+            sh(script: """
+               docker-compose down
+            """)
+         }
+      }
+      stage('Push Container') {
+         steps {
+            echo "Workspace is $WORKSPACE"
+            dir("$WORKSPACE/azure-vote") {
+               script {
+                  docker.withRegistry("https://index.docker.io/v1/", "DockerHub") {
+                     def image = docker.build("alabemhar/azure-voting-app:latest")
+                     image.push()
+                  }
+               }
+            }
+         }
+      }
       // stage('Container Scanning') {
       //    parallel {
       //       stage('Run Anchore') {
