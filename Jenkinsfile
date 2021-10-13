@@ -19,6 +19,11 @@ pipeline {
             """)
          }
       }
+      stage('Trivy - Security Scan') {
+         steps {
+            sh(script: "trivy jenkins-pipeline")
+         }
+      }
       stage('Start test app') {
          steps {
             sh(script: """
