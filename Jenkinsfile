@@ -68,6 +68,11 @@ pipeline {
             }
          }
       }
+      stage('Test Kubernetes CLI') {
+         withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://kubernetes.docker.internal:6443/']) {
+            sh 'kubectl get pod'
+         }
+      }
       // stage('Container Scanning') {
       //    parallel {
       //       stage('Run Anchore') {
